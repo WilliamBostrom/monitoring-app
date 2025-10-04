@@ -1,6 +1,5 @@
-from monitoring.monitoring import display_usage
+from menus.menu import menu
 
 if __name__ == "__main__":
-  print("Välkommen till monitoring")
-  display_usage()
+  menu()
 
