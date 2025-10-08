@@ -1,6 +1,6 @@
-import psutil
 import time
 from utils.monitoring_display import display_system_status
+from utils.system_info import get_system_info
 
 # Visar live systemövervakning med live uppdatering (1 sek mellanrum)
 def show_usage(cpu_usage, memory_usage, disk_usage, bars=50, msg="Live-övervakning"):
@@ -17,7 +17,8 @@ def show_current_status(cpu_usage, memory_usage, disk_usage):
 def display_usage():
   try:
     while True:
-      show_usage(psutil.cpu_percent(), psutil.virtual_memory().percent, psutil.disk_usage('C:').percent)
+      system_info = get_system_info()
+      show_usage(system_info['cpu_percent'], system_info['memory_percent'], system_info['disk_percent'])
       time.sleep(1)
   except KeyboardInterrupt:
     print("\nÅtergår till huvudmenyn...")
