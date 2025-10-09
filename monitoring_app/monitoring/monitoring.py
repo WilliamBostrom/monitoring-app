@@ -14,12 +14,21 @@ def show_current_status(cpu_usage, memory_usage, disk_usage):
   input()
 
 # Startar live systemövervakning
-def display_usage():
-  try:
-    while True:
-      system_info = get_system_info()
-      show_usage(system_info['cpu_percent'], system_info['memory_percent'], system_info['disk_percent'])
+def display_usage(live=True):
+  if live:
+    try:
+      while True:
+        system_info = get_system_info()
+        show_usage(system_info['cpu_percent'], system_info['memory_percent'], system_info['disk_percent'])
+        time.sleep(1)
+    except KeyboardInterrupt:
+      print("\nÅtergår till huvudmenyn...")
       time.sleep(1)
-  except KeyboardInterrupt:
-    print("\nÅtergår till huvudmenyn...")
-    time.sleep(1)
+  else:
+    # För API (frontend)
+    system_info = get_system_info()
+    return {
+      "cpu_percent": system_info["cpu_percent"],
+      "memory_percent": system_info["memory_percent"],
+      "disk_percent": system_info['disk_percent']
+    }

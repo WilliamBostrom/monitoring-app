@@ -24,19 +24,30 @@ def get_main_menu():
         {"id": 6, "text": "Avsluta programmet"},
     ]
 
-def handle_menu_choice(choice: int):
+def handle_menu_choice(choice: int, frontend = False):
     if choice == 1:
-        display_usage()
-        return "Övervakning startad."
+        if frontend:
+            return display_usage(live=False)
+        else:
+            display_usage()
+            return "Övervakning startad."
 
     elif choice == 2:
         system_info = get_system_info()
-        show_current_status(
-            system_info['cpu_percent'],
-            system_info['memory_percent'],
-            system_info['disk_percent']
-        )
-        return system_info
+
+        if frontend:
+            return {
+            "cpu_percent": system_info["cpu_percent"],
+            "memory_percent": system_info["memory_percent"],
+            "disk_percent": system_info["disk_percent"]
+            }
+        else:
+            show_current_status(
+                system_info['cpu_percent'],
+                system_info['memory_percent'],
+                system_info['disk_percent']
+            )
+            return system_info
 
     elif choice == 3:
         new_alarm = create_alarm()
