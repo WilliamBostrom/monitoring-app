@@ -24,7 +24,7 @@ def get_main_menu():
         {"id": 6, "text": "Avsluta programmet"},
     ]
 
-def handle_menu_choice(choice: int, frontend = False):
+def handle_menu_choice(choice: int, frontend = False, data: dict=None):
     if choice == 1:
         if frontend:
             return display_usage(live=False)
@@ -50,11 +50,19 @@ def handle_menu_choice(choice: int, frontend = False):
             return system_info
 
     elif choice == 3:
-        new_alarm = create_alarm()
-        if new_alarm:
-            alarms.append(new_alarm)
-            return f"Larm '{new_alarm}' skapat."
-        return "Inget larm skapat."
+        if frontend:
+            new_alarm = create_alarm(alarm_type=data.get("type"), threshold=data.get("threshold"), frontend=True)
+            if new_alarm:
+                alarms.append(new_alarm)
+                return {"message": f"Larm '{new_alarm.type}' skapat.", "threshold": new_alarm.threshold}
+            return {"error": "Ogiltiga indata eller misslyckad skapning."}
+
+        else:
+            new_alarm = create_alarm()
+            if new_alarm:
+                alarms.append(new_alarm)
+                return f"Larm '{new_alarm}' skapat."
+            return "Inget larm skapat."
 
     elif choice == 4:
         if not alarms:

@@ -7,6 +7,8 @@ def print_larm_menu():
 
 
 def get_alarm_threshold():
+
+    
     """Hämtar och validerar alarm-nivå från användaren"""
     while True:
         try:
@@ -21,8 +23,15 @@ def get_alarm_threshold():
 
 from alarms.alarm import Alarm
 
-def create_alarm():
+def create_alarm(alarm_type=None, threshold=None, frontend=False):
     """Huvudfunktion för att skapa larm"""
+    if frontend:
+        if alarm_type not in ["CPU användning", "Minnesanvändning", "Diskanvändning"]:
+            return None
+        if not (1 <= threshold <= 100):
+            return None
+        return Alarm(alarm_type, threshold)
+
     while True:
         print_larm_menu()
         menu_choice = input("Välj ett alternativ (1-4): ")

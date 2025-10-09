@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from menus.menu import get_main_menu, handle_menu_choice
@@ -21,11 +21,19 @@ app.add_middleware(
 
 class MenuChoice(BaseModel):
   choice: int
+  type: str | None = None 
+  threshold: int | None = None 
 
 
 @app.get("/menu")
 def get_menu():
   return {"options": get_main_menu()}
+
+@app.post("/set_alarm/{choice}")
+async def handle_menu(choice: int, request: Request):
+    data = await request.json()
+    result = handle_menu_choice(choice, frontend=True, data=data)
+    return result
 
 @app.post("/select")
 def select_option(data: MenuChoice):
