@@ -5,7 +5,7 @@
 
 <header class="header">
   <div class="header-content">
-    <h1 class="header-title">Systemövervakning</h1>
+    <h1 class="header-title">Slutuppgift Python</h1>
   </div>
 </header>
 
@@ -42,7 +42,7 @@
   /* Main-yta under headern */
   .main-content {
     padding: 2rem;
-    background-color: #f9f9f9;
+    background-color: #1a1a1a;
     min-height: calc(100vh - 70px);
   }
 </style>

@@ -160,11 +160,12 @@
 <style>
   h1 {
     text-align: center;
-    color: #1b3d2f;
+    color: #00ff41;
     font-size: 2.5rem;
     font-weight: 700;
     margin-bottom: 3rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+    font-family: 'Courier New', monospace;
   }
 
   .btn-container {
@@ -177,20 +178,21 @@
   }
 
   .btns {
-    background: linear-gradient(135deg, #1b3d2f 0%, #2d5a47 100%);
-    color: white;
-    border: none;
-    border-radius: 12px;
+    background: linear-gradient(135deg, #0d4f3c 0%, #1a5a47 100%);
+    color: #00ff41;
+    border: 2px solid #00ff41;
+    border-radius: 8px;
     padding: 1rem 2rem;
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(27, 61, 47, 0.3);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
     min-width: 150px;
     text-align: center;
     position: relative;
     overflow: hidden;
+    font-family: 'Courier New', monospace;
   }
 
   .btns::before {
@@ -200,14 +202,16 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.3), transparent);
     transition: left 0.5s;
   }
 
   .btns:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(27, 61, 47, 0.4);
-    background: linear-gradient(135deg, #2d5a47 0%, #1b3d2f 100%);
+    box-shadow: 0 0 25px rgba(0, 255, 65, 0.4);
+    background: linear-gradient(135deg, #1a5a47 0%, #0d4f3c 100%);
+    border-color: #00ff88;
+    color: #00ff88;
   }
 
   .btns:hover::before {
@@ -216,7 +220,7 @@
 
   .btns:active {
     transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(27, 61, 47, 0.3);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
   }
 
   .btns:disabled {
@@ -229,9 +233,9 @@
     display: inline-block;
     width: 16px;
     height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(0, 255, 65, 0.3);
     border-radius: 50%;
-    border-top-color: white;
+    border-top-color: #00ff41;
     animation: spin 1s ease-in-out infinite;
     margin-right: 8px;
   }
@@ -243,22 +247,24 @@
   .result-container {
     margin-top: 3rem;
     padding: 2rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    border-left: 4px solid #1b3d2f;
+    background: #2a2a2a;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+    border: 2px solid #00ff41;
+    font-family: 'Courier New', monospace;
   }
 
   .result-container h3 {
-    color: #1b3d2f;
+    color: #00ff41;
     margin-bottom: 1rem;
     font-size: 1.3rem;
+    text-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
   }
 
   .result-content p {
     font-size: 1.1rem;
     line-height: 1.6;
-    color: #333;
+    color: #00ff88;
   }
 
   .result-content ul {
@@ -268,8 +274,9 @@
 
   .result-content li {
     padding: 0.5rem 0;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #444;
     font-size: 1rem;
+    color: #00ff88;
   }
 
   .result-content li:last-child {
@@ -287,29 +294,30 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background: #f8f9fa;
+    background: #333;
     border-radius: 8px;
-    border-left: 3px solid #1b3d2f;
+    border-left: 3px solid #00ff41;
   }
 
   .info-item .label {
     font-weight: 600;
-    color: #1b3d2f;
+    color: #00ff41;
   }
 
   .info-item .value {
     font-weight: 700;
     font-size: 1.2rem;
-    color: #2d5a47;
+    color: #00ff88;
   }
 
   .alarm-inputs {
     margin-top: 2rem;
     padding: 2rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    border-left: 4px solid #1b3d2f;
+    background: #2a2a2a;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+    border: 2px solid #00ff41;
+    font-family: 'Courier New', monospace;
   }
 
   .alarm-inputs form {
@@ -323,28 +331,32 @@
     flex-direction: column;
     gap: 0.5rem;
     font-weight: 600;
-    color: #1b3d2f;
+    color: #00ff41;
   }
 
   .alarm-inputs select,
   .alarm-inputs input {
     padding: 0.8rem;
-    border: 2px solid #e0e0e0;
+    border: 2px solid #444;
     border-radius: 8px;
     font-size: 1rem;
+    background: #1a1a1a;
+    color: #00ff88;
     transition: border-color 0.3s ease;
+    font-family: 'Courier New', monospace;
   }
 
   .alarm-inputs select:focus,
   .alarm-inputs input:focus {
     outline: none;
-    border-color: #1b3d2f;
+    border-color: #00ff41;
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
   }
 
   .alarm-inputs button {
-    background: linear-gradient(135deg, #1b3d2f 0%, #2d5a47 100%);
-    color: white;
-    border: none;
+    background: linear-gradient(135deg, #0d4f3c 0%, #1a5a47 100%);
+    color: #00ff41;
+    border: 2px solid #00ff41;
     border-radius: 8px;
     padding: 1rem 2rem;
     font-size: 1.1rem;
@@ -352,26 +364,31 @@
     cursor: pointer;
     transition: all 0.3s ease;
     align-self: flex-start;
+    font-family: 'Courier New', monospace;
   }
 
   .alarm-inputs button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(27, 61, 47, 0.3);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+    border-color: #00ff88;
+    color: #00ff88;
   }
 
   .alarms-container {
     margin-top: 2rem;
     padding: 2rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    border-left: 4px solid #e74c3c;
+    background: #2a2a2a;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.1);
+    border: 2px solid #ff4444;
+    font-family: 'Courier New', monospace;
   }
 
   .alarms-container h3 {
-    color: #e74c3c;
+    color: #ff4444;
     margin-bottom: 1rem;
     font-size: 1.3rem;
+    text-shadow: 0 0 5px rgba(255, 68, 68, 0.3);
   }
 
   .alarms-list {
@@ -385,10 +402,10 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background: #fef2f2;
+    background: #333;
     border-radius: 8px;
     margin-bottom: 0.5rem;
-    border-left: 3px solid #e74c3c;
+    border-left: 3px solid #ff4444;
   }
 
   .alarm-item:last-child {
@@ -397,12 +414,12 @@
 
   .alarm-type {
     font-weight: 600;
-    color: #1b3d2f;
+    color: #00ff41;
   }
 
   .alarm-threshold {
     font-weight: 700;
-    color: #e74c3c;
+    color: #ff4444;
     font-size: 1.1rem;
   }
 
