@@ -1,20 +1,27 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
   let menuBtns:any[] = [];
   let alarms:any[] = [];
   let result: any = null;
   let loading = false;
+  let initialLoading = true;
   let showAlarmInputs = false;
   let alarmType = "CPU användning";
   let threshold = 50;
 
   async function fetchMenu(){
+    console.log("test");
     try {
-      const res = await fetch("http://localhost:8000/menu");
+      const res = await fetch("http://localhost:3000/menu");
       let data = await res.json()
       menuBtns = data.options;
       console.log(menuBtns)
     } catch(err: any){
       console.log(err.message)
+      console.log(err)
+    } finally {
+      initialLoading = false;
     }
   }
 
@@ -29,7 +36,7 @@
     }
 
     try {
-      const res = await fetch("http://localhost:8000/select", {
+      const res = await fetch("http://localhost:3000/select", {
         method: 'POST',
         body: JSON.stringify({choice: id}),
         headers: {"Content-Type": "application/json",}
@@ -50,7 +57,7 @@
     event.preventDefault();
     loading = true;
     try {
-        const res = await fetch("http://localhost:8000/set_alarm/3", {
+        const res = await fetch("http://localhost:3000/set_alarm/3", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -60,8 +67,6 @@
         });
         const data = await res.json();
         alarms.push(data);
-        console.log("Alarm created:", data);
-        console.log("All alarms:", alarms);
         showAlarmInputs = false; // göm input-fälten efter submit
         result = `Larm skapat: ${data.message || 'Larm skapat framgångsrikt'}`;
     } catch (err: any) {
@@ -72,22 +77,30 @@
     }
   }
 
+  onMount(() =>
   fetchMenu()
+)
+
 
 </script>
 
-<h1>Raspberry Pi Systemövervakning</h1>
-
-<div class="btn-container">
-    {#each menuBtns as btn }
-   <button class="btns" onclick={()=> selectChoice(btn.id)} disabled={loading}>
-     {#if loading}
-       <span class="loading-spinner" ></span>
-     {/if}
-     {btn.text}
-   </button>
-    {/each}
-</div>
+{#if initialLoading}
+  <div class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Laddar meny...</p>
+  </div>
+{:else}
+  <div class="btn-container">
+      {#each menuBtns as btn }
+     <button class="btns" onclick={()=> selectChoice(btn.id)} disabled={loading}>
+       {#if loading}
+         <span class="loading-spinner" ></span>
+       {/if}
+       {btn.text}
+     </button>
+      {/each}
+  </div>
+{/if}
 
 {#if result}
   <div class="result-container">
@@ -158,15 +171,6 @@
 </div>
 {/if}
 <style>
-  h1 {
-    text-align: center;
-    color: #00ff41;
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 3rem;
-    text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
-    font-family: 'Courier New', monospace;
-  }
 
   .btn-container {
     display: flex;
@@ -238,6 +242,28 @@
     border-top-color: #00ff41;
     animation: spin 1s ease-in-out infinite;
     margin-right: 8px;
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    margin-top: 2rem;
+  }
+
+  .loading-container .loading-spinner {
+    width: 32px;
+    height: 32px;
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+
+  .loading-container p {
+    color: #00ff88;
+    font-size: 1.1rem;
+    font-family: 'Courier New', monospace;
   }
 
   @keyframes spin {
@@ -425,10 +451,6 @@
 
   /* Responsiv design */
   @media (max-width: 768px) {
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 2rem;
-    }
     
     .btn-container {
       gap: 1rem;
