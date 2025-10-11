@@ -6,8 +6,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Production stage with nginx
-FROM nginx:alpine
-COPY --from=builder /app/build /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Copy built files to volume
+FROM alpine:latest
+COPY --from=builder /app/build /build
+CMD ["sh", "-c", "cp -r /build/* /usr/share/nginx/html/ && tail -f /dev/null"]

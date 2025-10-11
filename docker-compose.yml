@@ -13,8 +13,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: monitoring-frontend
-    expose:
-      - "80" # Bara internt
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./volumes/frontend:/usr/share/nginx/html
     networks:
       - appnet
 
@@ -31,9 +35,6 @@ services:
       - frontend
     networks:
       - appnet
-
-# volumes:
-# frontend_build:
 
 networks:
   appnet:

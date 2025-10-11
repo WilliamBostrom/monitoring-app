@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { API_URL } from '../config.js';
 
   let menuBtns:any[] = [];
   let alarms:any[] = [];
@@ -11,9 +12,8 @@
   let threshold = 50;
 
   async function fetchMenu(){
-    console.log("test");
     try {
-      const res = await fetch("http://localhost:3000/menu");
+      const res = await fetch(`${API_URL}/menu`);
       let data = await res.json()
       menuBtns = data.options;
       console.log(menuBtns)
@@ -36,7 +36,7 @@
     }
 
     try {
-      const res = await fetch("http://localhost:3000/select", {
+      const res = await fetch(`${API_URL}/select`, {
         method: 'POST',
         body: JSON.stringify({choice: id}),
         headers: {"Content-Type": "application/json",}
@@ -57,7 +57,7 @@
     event.preventDefault();
     loading = true;
     try {
-        const res = await fetch("http://localhost:3000/set_alarm/3", {
+        const res = await fetch(`${API_URL}/set_alarm/3`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
