@@ -20,7 +20,7 @@
     color: #f0f6fc;
     padding: 1rem 2rem;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     width: 100%;
@@ -41,6 +41,7 @@
     color: #f0f6fc;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    text-align: center;
   }
 
   /* Main-yta under headern */

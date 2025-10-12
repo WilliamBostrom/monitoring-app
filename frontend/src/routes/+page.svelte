@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { API_URL } from '../config.js';
 
   let menuBtns:any[] = [];
@@ -10,6 +10,7 @@
   let showAlarmInputs = false;
   let alarmType = "CPU användning";
   let threshold = 50;
+  let monitoringInterval: any = null;
 
   async function fetchMenu(){
     try {
@@ -35,6 +36,13 @@
         return;
     }
 
+    if (id === 1) {
+      loading = false;
+     activeMonitoring(id);
+
+     return;
+    }
+
     try {
       const res = await fetch(`${API_URL}/select`, {
         method: 'POST',
@@ -53,6 +61,43 @@
     }
   }
 
+  async function activeMonitoring(id: any){
+    // Stoppa eventuellt befintligt interval först
+    if (monitoringInterval) {
+      clearInterval(monitoringInterval);
+    }
+    // Starta nytt interval
+    monitoringInterval = setInterval(async() => {
+      try {
+        const res = await fetch(`${API_URL}/select`, {
+          method: 'POST',
+          body: JSON.stringify({choice: id}),
+          headers: {"Content-Type": "application/json",}
+        });
+        let data = await res.json()
+        result = data.result;
+        console.log(data)
+      } catch(err: any) {
+        console.error('Fel vid övervakning:', err.message);
+        result = "Ett fel uppstod vid övervakning: " + err.message;
+      }
+    }, 1000);
+  }
+
+  function stopMonitoring() {
+    if (monitoringInterval) {
+      clearInterval(monitoringInterval);
+      monitoringInterval = null;
+      result = null;
+    }
+  }
+
+  onDestroy(() => {
+    if (monitoringInterval) {
+      clearInterval(monitoringInterval);
+    }
+  });
+
   async function submitAlarm(event: SubmitEvent) {
     event.preventDefault();
     loading = true;
@@ -67,7 +112,7 @@
         });
         const data = await res.json();
         alarms.push(data);
-        showAlarmInputs = false; // göm input-fälten efter submit
+        showAlarmInputs = false; 
         result = `Larm skapat: ${data.message || 'Larm skapat framgångsrikt'}`;
     } catch (err: any) {
         console.error("Error creating alarm:", err);
@@ -77,10 +122,7 @@
     }
   }
 
-  onMount(() =>
-  fetchMenu()
-)
-
+  onMount(() => fetchMenu())
 
 </script>
 
@@ -102,9 +144,14 @@
   </div>
 {/if}
 
-{#if result}
+{#if result && !showAlarmInputs}
   <div class="result-container">
-    <h3>Resultat:</h3>
+    <div class="result-header">
+      <h3>Resultat:</h3>
+      {#if monitoringInterval}
+        <button class="stop-btn" onclick={stopMonitoring}>Stoppa övervakning</button>
+      {/if}
+    </div>
     <div class="result-content">
       {#if typeof result === 'string'}
         <p>{result}</p>
@@ -176,9 +223,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1.5rem;
+    gap: 0.5rem;
     flex-wrap: wrap;
-    margin-top: 2rem;
   }
 
   .btns {
@@ -186,7 +232,7 @@
     color: #00ff41;
     border: 2px solid #00ff41;
     border-radius: 8px;
-    padding: 1rem 2rem;
+    padding: 1rem 1rem;
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
@@ -280,11 +326,39 @@
     font-family: 'Courier New', monospace;
   }
 
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
   .result-container h3 {
     color: #00ff41;
-    margin-bottom: 1rem;
+    margin: 0;
     font-size: 1.3rem;
     text-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
+  }
+
+  .stop-btn {
+    background: linear-gradient(135deg, #4f0d0d 0%, #5a1a1a 100%);
+    color: #ff4141;
+    border: 2px solid #ff4141;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Courier New', monospace;
+  }
+
+  .stop-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(255, 65, 65, 0.3);
+    border-color: #ff8888;
+    color: #ff8888;
+    background: linear-gradient(135deg, #5a1a1a 0%, #4f0d0d 100%);
   }
 
   .result-content p {
