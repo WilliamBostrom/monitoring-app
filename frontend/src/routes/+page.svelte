@@ -5,6 +5,8 @@
   let menuBtns:any[] = [];
   let alarms:any[] = [];
   let result: any = null;
+  let monitoring: any = null;
+
   let loading = false;
   let initialLoading = true;
   let showAlarmInputs = false;
@@ -75,11 +77,11 @@
           headers: {"Content-Type": "application/json",}
         });
         let data = await res.json()
-        result = data.result;
+        monitoring = data.result;
         console.log(data)
       } catch(err: any) {
         console.error('Fel vid övervakning:', err.message);
-        result = "Ett fel uppstod vid övervakning: " + err.message;
+        monitoring = "Ett fel uppstod vid övervakning: " + err.message;
       }
     }, 1000);
   }
@@ -147,10 +149,7 @@
 {#if result && !showAlarmInputs}
   <div class="result-container">
     <div class="result-header">
-      <h3>Resultat:</h3>
-      {#if monitoringInterval}
-        <button class="stop-btn" onclick={stopMonitoring}>Stoppa övervakning</button>
-      {/if}
+      <h3>Resultat:</h3>   
     </div>
     <div class="result-content">
       {#if typeof result === 'string'}
@@ -174,6 +173,43 @@
           <div class="info-item">
             <span class="label">Disk:</span>
             <span class="value">{result.disk_percent}%</span>
+          </div>
+        </div>
+      {/if}
+    </div>
+  </div>
+{/if}
+
+{#if monitoring && !showAlarmInputs && !result}
+  <div class="result-container">
+    <div class="result-header">
+      <h3>Resultat:</h3>
+      {#if monitoringInterval}
+        <button class="stop-btn" onclick={stopMonitoring}>Stoppa övervakning</button>
+      {/if}
+    </div>
+    <div class="result-content">
+      {#if typeof monitoring === 'string'}
+        <p>{monitoring}</p>
+      {:else if Array.isArray(monitoring)}
+        <ul>
+          {#each monitoring as item}
+            <li>{item}</li>
+          {/each}
+        </ul>
+      {:else if typeof monitoring === 'object'}
+        <div class="system-info">
+          <div class="info-item">
+            <span class="label">CPU:</span>
+            <span class="value">{monitoring.cpu_percent}%</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Minne:</span>
+            <span class="value">{monitoring.memory_percent}%</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Disk:</span>
+            <span class="value">{monitoring.disk_percent}%</span>
           </div>
         </div>
       {/if}
