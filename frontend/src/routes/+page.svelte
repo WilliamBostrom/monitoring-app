@@ -1,131 +1,217 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { API_URL } from '../config.js';
+	import * as api from '../lib/api.js';
 
-  let menuBtns:any[] = [];
-  let alarms:any[] = [];
+  let menuBtns: any[] = [];
   let result: any = null;
   let monitoring: any = null;
 
   let loading = false;
   let initialLoading = true;
   let showAlarmInputs = false;
+  let showAlarmList = false;
   let alarmType = "CPU användning";
   let threshold = 50;
   let monitoringInterval: any = null;
 
-  async function fetchMenu(){
+  // Alarm state
+  let activeAlarms: any[] = [];
+  let triggeredAlarms: any[] = [];
+  let alarmMonitoringActive = false;
+  let alarmMonitoringInterval: any = null;
+
+  async function fetchMenu() {
     try {
-      const res = await fetch(`${API_URL}/menu`);
-      let data = await res.json()
-      menuBtns = data.options;
-      console.log(menuBtns)
-    } catch(err: any){
-      console.log(err.message)
-      console.log(err)
+      menuBtns = await api.fetchMenu();
+    } catch (err: any) {
+      console.error('Error loading menu:', err.message);
     } finally {
       initialLoading = false;
     }
   }
 
-  async function selectChoice(id: any){
+  async function selectChoice(id: any) {
     loading = true;
     result = null;
     
-    if (id === 3) {
-        showAlarmInputs = true;
-        loading = false;
-        return;
-    }
-
-    if (id === 1) {
-      loading = false;
-     activeMonitoring(id);
-
-     return;
-    }
-
     try {
-      const res = await fetch(`${API_URL}/select`, {
-        method: 'POST',
-        body: JSON.stringify({choice: id}),
-        headers: {"Content-Type": "application/json",}
-      });
-      let data = await res.json()
-      
-      result = data.result;
-      console.log(data)
-    } catch(err: any){
-      console.log(err.message)
+      if (id === 3) {
+        showAlarmInputs = true;
+        return;
+      }
+
+      if (id === 1) {
+        activeMonitoring(id);
+        return;
+      }
+
+      if (id === 4) {
+        await fetchAlarms();
+        showAlarmInputs = false;
+        showAlarmList = !showAlarmList;
+        return;
+      }
+
+      if (id === 5) {
+        await startAlarmMonitoring();
+        return;
+      }
+
+      if (id === 6) {
+        stopAllMonitoring();
+        return;
+      }
+
+      // For other choices, use the API
+      result = await api.selectChoice(id);
+    } catch (err: any) {
+      console.error('Error in selectChoice:', err.message);
       result = "Ett fel uppstod: " + err.message;
     } finally {
       loading = false;
     }
   }
 
-  async function activeMonitoring(id: any){
-    // Stoppa eventuellt befintligt interval först
+  async function activeMonitoring(id: any) {
     if (monitoringInterval) {
       clearInterval(monitoringInterval);
     }
-    // Starta nytt interval
-    monitoringInterval = setInterval(async() => {
+    
+    monitoringInterval = setInterval(async () => {
       try {
-        const res = await fetch(`${API_URL}/select`, {
-          method: 'POST',
-          body: JSON.stringify({choice: id}),
-          headers: {"Content-Type": "application/json",}
-        });
-        let data = await res.json()
-        monitoring = data.result;
-        console.log(data)
-      } catch(err: any) {
+        monitoring = await api.selectChoice(id);
+      } catch (err: any) {
         console.error('Fel vid övervakning:', err.message);
         monitoring = "Ett fel uppstod vid övervakning: " + err.message;
       }
     }, 1000);
   }
 
-  function stopMonitoring() {
+  function stopAllMonitoring() {
     if (monitoringInterval) {
       clearInterval(monitoringInterval);
       monitoringInterval = null;
-      result = null;
+    }
+    
+    if (alarmMonitoringInterval) {
+      clearInterval(alarmMonitoringInterval);
+      alarmMonitoringInterval = null;
+    }
+    
+    if (alarmMonitoringActive) {
+      stopAlarmMonitoring();
+    }
+    
+    monitoring = null;
+    result = null;
+    alarmMonitoringActive = false;
+    triggeredAlarms = [];
+    
+  }
+
+  async function submitAlarm(event: SubmitEvent) {
+    event.preventDefault();
+    loading = true;
+    
+    try {
+      const data = await api.createAlarm(alarmType, threshold);
+      
+      if (data.error) {
+        result = data.error;
+      } else {
+        await fetchAlarms();
+        showAlarmInputs = false;
+        result = data.message;
+      }
+    } catch (err: any) {
+      console.error("Error creating alarm:", err);
+      result = "Ett fel uppstod: " + err.message;
+    } finally {
+      loading = false;
     }
   }
+
+  async function fetchAlarms() {
+    try {
+      activeAlarms = await api.fetchAlarms();
+    } catch (err: any) {
+      console.error("Fel vid hämtning av alarm:", err.message);
+    }
+  }
+
+  async function fetchAlarmStatus() {
+    try {
+      const data = await api.fetchAlarmStatus();
+      triggeredAlarms = data.triggered_alarms || [];
+      alarmMonitoringActive = data.monitoring_active;
+    } catch (err: any) {
+      console.error("Fel vid hämtning av alarm status:", err.message);
+    }
+  }
+
+  async function startAlarmMonitoring() {
+    try {
+      const data = await api.startAlarmMonitoring();
+      
+      if (data.message) {
+        alarmMonitoringActive = true;
+        alarmMonitoringInterval = setInterval(fetchAlarmStatus, 2000);
+        result = data.message;
+      }
+    } catch (err: any) {
+      console.error("Fel vid start av alarm monitoring:", err.message);
+      result = "Ett fel uppstod: " + err.message;
+    }
+  }
+
+  async function stopAlarmMonitoring() {
+    try {
+      const data = await api.stopAlarmMonitoring();
+      
+      if (data.message) {
+        alarmMonitoringActive = false;
+        if (alarmMonitoringInterval) {
+          clearInterval(alarmMonitoringInterval);
+          alarmMonitoringInterval = null;
+        }
+        result = data.message;
+      }
+    } catch (err: any) {
+      console.error("Fel vid stopp av alarm monitoring:", err.message);
+      result = "Ett fel uppstod: " + err.message;
+    }
+  }
+
+  async function deleteAlarm(alarmId: number) {
+    try {
+      const data = await api.deleteAlarm(alarmId);
+      
+      if (data.message) {
+        await fetchAlarms();
+        result = data.message;
+      } else {
+        result = data.error;
+      }
+    } catch (err: any) {
+      console.error("Fel vid borttagning av alarm:", err.message);
+      result = "Ett fel uppstod: " + err.message;
+    }
+  }
+
+  onMount(async () => {
+    await fetchMenu();
+    await fetchAlarms();
+    await fetchAlarmStatus();
+  });
 
   onDestroy(() => {
     if (monitoringInterval) {
       clearInterval(monitoringInterval);
     }
-  });
-
-  async function submitAlarm(event: SubmitEvent) {
-    event.preventDefault();
-    loading = true;
-    try {
-        const res = await fetch(`${API_URL}/set_alarm/3`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                type: alarmType,
-                threshold: threshold
-            })
-        });
-        const data = await res.json();
-        alarms.push(data);
-        showAlarmInputs = false; 
-        result = `Larm skapat: ${data.message || 'Larm skapat framgångsrikt'}`;
-    } catch (err: any) {
-        console.error("Error creating alarm:", err);
-        result = "Ett fel uppstod: " + err.message;
-    } finally {
-        loading = false;
+    if (alarmMonitoringInterval) {
+      clearInterval(alarmMonitoringInterval);
     }
-  }
-
-  onMount(() => fetchMenu())
-
+  });
 </script>
 
 {#if initialLoading}
@@ -133,91 +219,109 @@
     <div class="loading-spinner"></div>
     <p>Laddar meny...</p>
   </div>
+{:else if alarmMonitoringActive}
+  <!-- Monitoring Mode - Visa bara alarm-relaterad information -->
+  <div class="monitoring-mode">
+    <!-- Visa aktiva alarm -->
+    {#if activeAlarms.length > 0}
+    <div class="alarms-container">
+        <div class="alarms-header">
+            <h3>🔍 Övervakningsläge aktivt - Aktiva larm ({activeAlarms.length})</h3>
+            <button class="btn btn-danger" onclick={stopAlarmMonitoring}>Stoppa övervakning</button>
+        </div>
+        <ul class="alarms-list">
+            {#each activeAlarms as alarm}
+                <li class="alarm-item">
+                    <div class="alarm-info">
+                        <span class="alarm-type">{alarm.type}</span>
+                        <span class="alarm-threshold">{alarm.threshold}%</span>
+                    </div>
+                    <button class="btn btn-danger" onclick={() => deleteAlarm(alarm.id)}>Ta bort</button>
+                </li>
+            {/each}
+        </ul>
+    </div>
+    {:else}
+    <div class="no-alarms">
+        <h3>🔍 Övervakningsläge aktivt</h3>
+        <p>Inga aktiva larm konfigurerade.</p>
+        <button class="btn btn-danger" onclick={stopAlarmMonitoring}>Stoppa övervakning</button>
+    </div>
+    {/if}
+
+    <!-- Visa triggade alarm -->
+    {#if triggeredAlarms.length > 0}
+    <div class="triggered-alarms-container">
+        <h3>🚨 TRIGGADE LARM ({triggeredAlarms.length})</h3>
+        <ul class="triggered-alarms-list">
+            {#each triggeredAlarms as triggered}
+                <li class="triggered-alarm-item">
+                    <div class="alarm-warning">
+                        <span class="warning-text">VARNING: {triggered.alarm.type} ÖVERSTIGER {triggered.threshold}%</span>
+                        <span class="current-value">Aktuellt värde: {triggered.current_value.toFixed(1)}%</span>
+                    </div>
+                </li>
+            {/each}
+        </ul>
+    </div>
+    {:else}
+    <div class="no-triggered-alarms">
+        <p>✅ Inga larm triggade för tillfället</p>
+    </div>
+    {/if}
+  </div>
 {:else}
+  <!-- Normal Mode - Visa meny och allt annat -->
   <div class="btn-container">
       {#each menuBtns as btn }
-     <button class="btns" onclick={()=> selectChoice(btn.id)} disabled={loading}>
+     <button class="btn" onclick={()=> selectChoice(btn.id)} disabled={loading}>
        {#if loading}
          <span class="loading-spinner" ></span>
+       {:else if btn.id === 1 && monitoring && typeof monitoring === 'object'}
+         <div class="btn-content">
+           <div class="btn-title">{btn.text}</div>
+           <div class="btn-values">
+             <span>CPU: {monitoring.cpu_percent}%</span>
+             <span>RAM: {monitoring.memory_percent}%</span>
+             <span>Disk: {monitoring.disk_percent}%</span>
+           </div>
+         </div>
+       {:else if btn.id === 2 && result && typeof result === 'object'}
+         <div class="btn-content">
+           <div class="btn-title">{btn.text}</div>
+           <div class="btn-values">
+             <span>CPU: {result.cpu_percent}%</span>
+             <span>RAM: {result.memory_percent}%</span>
+             <span>Disk: {result.disk_percent}%</span>
+           </div>
+         </div>
+       {:else if btn.id === 4 && activeAlarms.length > 0}
+         <div class="btn-content">
+           <div class="btn-title">{btn.text}</div>
+           <div class="btn-values">
+             <span>{activeAlarms.length} alarm aktiva</span>
+           </div>
+         </div>
+       {:else}
+         {btn.text}
        {/if}
-       {btn.text}
      </button>
       {/each}
   </div>
 {/if}
 
-{#if result && !showAlarmInputs}
+{#if result && !showAlarmInputs && (typeof result === 'string' && result.includes('fel') || typeof result === 'string' && result.includes('error'))}
   <div class="result-container">
     <div class="result-header">
-      <h3>Resultat:</h3>   
+      <h3>Fel:</h3>   
     </div>
     <div class="result-content">
-      {#if typeof result === 'string'}
-        <p>{result}</p>
-      {:else if Array.isArray(result)}
-        <ul>
-          {#each result as item}
-            <li>{item}</li>
-          {/each}
-        </ul>
-      {:else if typeof result === 'object'}
-        <div class="system-info">
-          <div class="info-item">
-            <span class="label">CPU:</span>
-            <span class="value">{result.cpu_percent}%</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Minne:</span>
-            <span class="value">{result.memory_percent}%</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Disk:</span>
-            <span class="value">{result.disk_percent}%</span>
-          </div>
-        </div>
-      {/if}
+      <p>{result}</p>
     </div>
   </div>
 {/if}
 
-{#if monitoring && !showAlarmInputs && !result}
-  <div class="result-container">
-    <div class="result-header">
-      <h3>Resultat:</h3>
-      {#if monitoringInterval}
-        <button class="stop-btn" onclick={stopMonitoring}>Stoppa övervakning</button>
-      {/if}
-    </div>
-    <div class="result-content">
-      {#if typeof monitoring === 'string'}
-        <p>{monitoring}</p>
-      {:else if Array.isArray(monitoring)}
-        <ul>
-          {#each monitoring as item}
-            <li>{item}</li>
-          {/each}
-        </ul>
-      {:else if typeof monitoring === 'object'}
-        <div class="system-info">
-          <div class="info-item">
-            <span class="label">CPU:</span>
-            <span class="value">{monitoring.cpu_percent}%</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Minne:</span>
-            <span class="value">{monitoring.memory_percent}%</span>
-          </div>
-          <div class="info-item">
-            <span class="label">Disk:</span>
-            <span class="value">{monitoring.disk_percent}%</span>
-          </div>
-        </div>
-      {/if}
-    </div>
-  </div>
-{/if}
-
-{#if showAlarmInputs}
+{#if showAlarmInputs && !alarmMonitoringActive}
 <div class="alarm-inputs">
   <form onsubmit={submitAlarm}>
     <label>
@@ -236,341 +340,22 @@
   
     <button type="submit">Skapa larm</button>
   </form>
-  
 </div>
 {/if}
 
-{#if alarms.length > 0}
+{#if activeAlarms.length > 0 && !alarmMonitoringActive && !showAlarmInputs && showAlarmList}
 <div class="alarms-container">
-  <h3>Aktiva larm:</h3>
+  <h3>Aktiva larm ({activeAlarms.length}):</h3>
   <ul class="alarms-list">
-    {#each alarms as alarm}
+    {#each activeAlarms as alarm}
       <li class="alarm-item">
-        <span class="alarm-type">{alarm.type || alarmType}</span>
-        <span class="alarm-threshold">{alarm.threshold || threshold}%</span>
+        <div class="alarm-info">
+          <span class="alarm-type">{alarm.type}</span>
+          <span class="alarm-threshold">{alarm.threshold}%</span>
+        </div>
+        <button class="btn btn-danger" onclick={() => deleteAlarm(alarm.id)}>Ta bort</button>
       </li>
     {/each}
   </ul>
 </div>
 {/if}
-<style>
-
-  .btn-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .btns {
-    background: linear-gradient(135deg, #0d4f3c 0%, #1a5a47 100%);
-    color: #00ff41;
-    border: 2px solid #00ff41;
-    border-radius: 8px;
-    padding: 1rem 1rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
-    min-width: 150px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    font-family: 'Courier New', monospace;
-  }
-
-  .btns::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.3), transparent);
-    transition: left 0.5s;
-  }
-
-  .btns:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0 25px rgba(0, 255, 65, 0.4);
-    background: linear-gradient(135deg, #1a5a47 0%, #0d4f3c 100%);
-    border-color: #00ff88;
-    color: #00ff88;
-  }
-
-  .btns:hover::before {
-    left: 100%;
-  }
-
-  .btns:active {
-    transform: translateY(-1px);
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
-  }
-
-  .btns:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .loading-spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(0, 255, 65, 0.3);
-    border-radius: 50%;
-    border-top-color: #00ff41;
-    animation: spin 1s ease-in-out infinite;
-    margin-right: 8px;
-  }
-
-  .loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem;
-    margin-top: 2rem;
-  }
-
-  .loading-container .loading-spinner {
-    width: 32px;
-    height: 32px;
-    margin-right: 0;
-    margin-bottom: 1rem;
-  }
-
-  .loading-container p {
-    color: #00ff88;
-    font-size: 1.1rem;
-    font-family: 'Courier New', monospace;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  .result-container {
-    margin-top: 3rem;
-    padding: 2rem;
-    background: #2a2a2a;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
-    border: 2px solid #00ff41;
-    font-family: 'Courier New', monospace;
-  }
-
-  .result-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-
-  .result-container h3 {
-    color: #00ff41;
-    margin: 0;
-    font-size: 1.3rem;
-    text-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
-  }
-
-  .stop-btn {
-    background: linear-gradient(135deg, #4f0d0d 0%, #5a1a1a 100%);
-    color: #ff4141;
-    border: 2px solid #ff4141;
-    border-radius: 8px;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: 'Courier New', monospace;
-  }
-
-  .stop-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 15px rgba(255, 65, 65, 0.3);
-    border-color: #ff8888;
-    color: #ff8888;
-    background: linear-gradient(135deg, #5a1a1a 0%, #4f0d0d 100%);
-  }
-
-  .result-content p {
-    font-size: 1.1rem;
-    line-height: 1.6;
-    color: #00ff88;
-  }
-
-  .result-content ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  .result-content li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #444;
-    font-size: 1rem;
-    color: #00ff88;
-  }
-
-  .result-content li:last-child {
-    border-bottom: none;
-  }
-
-  .system-info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-  }
-
-  .info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background: #333;
-    border-radius: 8px;
-    border-left: 3px solid #00ff41;
-  }
-
-  .info-item .label {
-    font-weight: 600;
-    color: #00ff41;
-  }
-
-  .info-item .value {
-    font-weight: 700;
-    font-size: 1.2rem;
-    color: #00ff88;
-  }
-
-  .alarm-inputs {
-    margin-top: 2rem;
-    padding: 2rem;
-    background: #2a2a2a;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
-    border: 2px solid #00ff41;
-    font-family: 'Courier New', monospace;
-  }
-
-  .alarm-inputs form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .alarm-inputs label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    font-weight: 600;
-    color: #00ff41;
-  }
-
-  .alarm-inputs select,
-  .alarm-inputs input {
-    padding: 0.8rem;
-    border: 2px solid #444;
-    border-radius: 8px;
-    font-size: 1rem;
-    background: #1a1a1a;
-    color: #00ff88;
-    transition: border-color 0.3s ease;
-    font-family: 'Courier New', monospace;
-  }
-
-  .alarm-inputs select:focus,
-  .alarm-inputs input:focus {
-    outline: none;
-    border-color: #00ff41;
-    box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
-  }
-
-  .alarm-inputs button {
-    background: linear-gradient(135deg, #0d4f3c 0%, #1a5a47 100%);
-    color: #00ff41;
-    border: 2px solid #00ff41;
-    border-radius: 8px;
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    align-self: flex-start;
-    font-family: 'Courier New', monospace;
-  }
-
-  .alarm-inputs button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
-    border-color: #00ff88;
-    color: #00ff88;
-  }
-
-  .alarms-container {
-    margin-top: 2rem;
-    padding: 2rem;
-    background: #2a2a2a;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(255, 0, 0, 0.1);
-    border: 2px solid #ff4444;
-    font-family: 'Courier New', monospace;
-  }
-
-  .alarms-container h3 {
-    color: #ff4444;
-    margin-bottom: 1rem;
-    font-size: 1.3rem;
-    text-shadow: 0 0 5px rgba(255, 68, 68, 0.3);
-  }
-
-  .alarms-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .alarm-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    background: #333;
-    border-radius: 8px;
-    margin-bottom: 0.5rem;
-    border-left: 3px solid #ff4444;
-  }
-
-  .alarm-item:last-child {
-    margin-bottom: 0;
-  }
-
-  .alarm-type {
-    font-weight: 600;
-    color: #00ff41;
-  }
-
-  .alarm-threshold {
-    font-weight: 700;
-    color: #ff4444;
-    font-size: 1.1rem;
-  }
-
-  /* Responsiv design */
-  @media (max-width: 768px) {
-    
-    .btn-container {
-      gap: 1rem;
-      padding: 0 1rem;
-    }
-    
-    .btns {
-      padding: 0.8rem 1.5rem;
-      font-size: 1rem;
-      min-width: 120px;
-    }
-  }
-</style>

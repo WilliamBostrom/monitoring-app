@@ -2,6 +2,7 @@ from monitoring.monitoring import display_usage, show_current_status
 from .larm_menu import create_alarm
 from utils.system_info import get_system_info
 from alarms.alarm import alarm_monitor
+from alarms.alarm_manager import alarm_manager
 
 def print_main_menu():
     print("\n--- HUVUDMENY ---")
@@ -11,8 +12,6 @@ def print_main_menu():
     print("4. Visa larm")
     print("5. Starta övervakningsläge")
     print("6. Avsluta programmet")
-
-alarms = []
 
 def get_main_menu():
     return [
@@ -24,7 +23,7 @@ def get_main_menu():
         {"id": 6, "text": "Avsluta programmet"},
     ]
 
-def handle_menu_choice(choice: int, frontend = False, data: dict=None):
+def handle_menu_choice(choice, frontend = False, data=None):
     if choice == 1:
         if frontend:
             return display_usage(live=False)
@@ -53,28 +52,32 @@ def handle_menu_choice(choice: int, frontend = False, data: dict=None):
         if frontend:
             new_alarm = create_alarm(alarm_type=data.get("type"), threshold=data.get("threshold"), frontend=True)
             if new_alarm:
-                alarms.append(new_alarm)
-                return {"message": f"Larm '{new_alarm.type}' skapat.", "threshold": new_alarm.threshold}
+                return alarm_manager.add_alarm(new_alarm)
             return {"error": "Ogiltiga indata eller misslyckad skapning."}
 
         else:
             new_alarm = create_alarm()
             if new_alarm:
-                alarms.append(new_alarm)
+                result = alarm_manager.add_alarm(new_alarm)
                 return f"Larm '{new_alarm}' skapat."
             return "Inget larm skapat."
 
     elif choice == 4:
+        alarms = alarm_manager.get_alarms()
         if not alarms:
             return "Inga larm är konfigurerade."
-        sorted_alarms = sorted(alarms, key=lambda x: x.type)
-        return [str(a) for a in sorted_alarms]
+        return alarms
 
     elif choice == 5:
+        alarms = alarm_manager.get_alarms()
         if not alarms:
             return "Inga larm är konfigurerade. Skapa larm först."
-        alarm_monitor(alarms)
-        return "Övervakningsläge startat."
+        if frontend:
+            alarm_manager.start_monitoring()
+            return {"message": "Övervakningsläge startat."}
+        else:
+            alarm_monitor([alarm for alarm in alarm_manager.alarms])
+            return "Övervakningsläge startat."
     
     elif choice == 6:
         return "Avslutar programmet.."

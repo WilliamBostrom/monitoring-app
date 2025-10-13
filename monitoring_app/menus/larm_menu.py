@@ -7,8 +7,6 @@ def print_larm_menu():
 
 
 def get_alarm_threshold():
-
-    
     """Hämtar och validerar alarm-nivå från användaren"""
     while True:
         try:
