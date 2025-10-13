@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import * as api from '../lib/api.js';
+	import * as api from '../lib/api';
 
   let menuBtns: any[] = [];
   let result: any = null;
