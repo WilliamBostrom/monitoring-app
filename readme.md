@@ -10,6 +10,11 @@ npm install
 npm run dev
 ```
 
+```bash
+cd monitoring-app
+uvicorn main:app --reload
+```
+
 ### Docker
 
 ```bash
