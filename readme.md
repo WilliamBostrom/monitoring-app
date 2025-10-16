@@ -1,43 +1,48 @@
-# Python DevOps Slutuppgift - Systemövervakning
+# Frontend - Monitoring App
 
-## Projektstatus: 8:e Oktober
+## Snabbstart
 
-### GODKÄND NIVÅ - ALLA KRAV UPPFYLLDA
+### Lokal utveckling
 
-**Krav 1-2: Grundläggande övervakning**
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-- Starta övervakning - Live-övervakning av CPU, minne och disk
-- Lista aktiv övervakning - Snapshot med procent och GB-information
+### Docker
 
-**Krav 3-5: Larmhantering**
+```bash
+docker compose up --build
+```
 
-- Skapa larm (CPU/minne/disk med procentuell nivå) - Med validering 1-100%
-- Visa larm (sorterade efter typ) - Alfabetisk sortering med lambda-funktioner
-- Starta övervakningsläge (kontinuerlig övervakning med larmvarningar) - Med Enter/Ctrl+C avslut
+## Konfiguration
 
-**Teknisk struktur**
+### API URL
 
-- Modulär kodstruktur (flera filer) - 7 aktiva filer
-- Objektorienterad programmering - Alarm-klass implementerad
-- Funktionell programmering - Lambda-funktioner för sortering
-- Svenska användargränssnitt
-- Välskriven kod med tydliga variabelnamn och kommentarer
-- Input sanitization - Validering av användarinput
-- Bugfri funktionalitet
+Ändra URL i `src/config.ts`:
 
-**Arkitektur:**
+```typescript
+export const API_URL = "http://python-chasacademy.local:3000";
+```
 
-- `main.py` - Programstart
-- `menus/menu.py` - Huvudmeny och navigation
-- `menus/larm_menu.py` - Larm-skapande meny
-- `alarms/alarm.py` - Alarm-klass och övervakningslogik
-- `monitoring/monitoring.py` - Övervakningsfunktioner
-- `utils/system_info.py` - Systemdata-hämtning
-- `utils/monitoring_display.py` - Display-funktioner
-- `utils/utils.py` - Hjälpfunktioner
+**För lokal testning:** Ändra till `http://localhost:3000`
 
-### VG-nivå (valfritt):
+## Teknisk Stack
 
-- Loggning av alla händelser
-- Ta bort larm
-- Persistera larm till disk (JSON)
+- **SvelteKit** + **Vite** + **TypeScript**
+- **Docker** med **Nginx** container
+- **Nginx proxy** routar API-anrop till backend
+
+## Funktioner
+
+- Meny-system
+- Övervakning (CPU, RAM, Disk)
+- Larm-system
+- Realtidsstatus
+
+## Docker Struktur
+
+- `frontend` container: Serves SvelteKit-app
+- `nginx` container: Proxy på port 3000
+- `backend` container: API på port 8000
