@@ -17,8 +17,6 @@ services:
       - .env
     environment:
       - NODE_ENV=production
-    volumes:
-      - ./volumes/frontend:/usr/share/nginx/html
     networks:
       - appnet
 
@@ -29,7 +27,6 @@ services:
       - "3000:80" # Enda externa porten
     volumes:
       - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./volumes/frontend:/usr/share/nginx/html:ro
     depends_on:
       - backend
       - frontend
