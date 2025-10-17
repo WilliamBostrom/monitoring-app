@@ -4,6 +4,7 @@ from utils.utils import wait_for_enter
 
 
 
+
 class Alarm:
     def __init__(self, alarm_type, threshold):
         self.type = alarm_type
@@ -58,7 +59,7 @@ def alarm_monitor(alarms):
       
       print(f"Övervakning är aktiv, tryck på Enter för att återgå till menyn.")
       
-      # Kolla om användaren tryckt Enter (icke-blockerande)
+      # Kolla om användaren tryckt Enter 
       if wait_for_enter():
           print("\nÅtergår till huvudmenyn...")
           break

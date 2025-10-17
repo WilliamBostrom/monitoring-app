@@ -1,0 +1,14 @@
+{
+  "alarms": [
+    {
+      "type": "Diskanv\u00e4ndning",
+      "threshold": 11,
+      "id": 0
+    },
+    {
+      "type": "Minnesanv\u00e4ndning",
+      "threshold": 20,
+      "id": 1
+    }
+  ]
+}

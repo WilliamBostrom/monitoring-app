@@ -5,9 +5,8 @@ def print_larm_menu():
     print("3. Diskanvändning")
     print("4. Tillbaka till huvudmeny")
 
-
+# Hämtar och validerar alarm-nivå 
 def get_alarm_threshold():
-    """Hämtar och validerar alarm-nivå från användaren"""
     while True:
         try:
             threshold = int(input("Ställ in nivå för alarm mellan 1-100: "))
@@ -20,9 +19,10 @@ def get_alarm_threshold():
 
 
 from alarms.alarm import Alarm
+from alarms.alarm_manager import alarm_manager
 
+ # funktion för att skapa larm
 def create_alarm():
-    """Huvudfunktion för att skapa larm"""
     while True:
         print_larm_menu()
         menu_choice = input("Välj ett alternativ (1-4): ")
@@ -43,7 +43,57 @@ def create_alarm():
             return Alarm("Diskanvändning", threshold)
 
         elif menu_choice == "4":
-            return None  # Användaren vill gå tillbaka
+            return None  # För gå tillbaka
 
         else:
             print("Ogiltigt val. Välj 1-4.")
+
+def edit_larm_menu():
+    print("\n--- Editera larm ---")
+    print("1. Ta bort larm")
+    print("2. Tillbaka till huvudmeny")
+
+# Hämtar alarm och tar mot id för eventullt ta bort
+def get_alarm_id():
+    while True:
+        try:
+            alarms = alarm_manager.get_alarms()
+            if not alarms:
+                print("Inga larm finns att ta bort.")
+                return None
+            
+            print("\n--- Tillgängliga larm ---")
+            for alarm in alarms:
+                print(f"ID {alarm['id']}: {alarm['str']}")
+            
+            alarm_id = int(input("\nVälj id på larmet du vill ta bort: "))
+            if alarm_id >= 0:
+                return alarm_id
+            else:
+                print("Fel: Välj ett giltigt id (0 eller högre).")
+        except ValueError:
+            print("Fel: Ange en giltig siffra.")
+
+
+def edit_alarm():
+    # Funktion för att editera larm
+    while True:
+        edit_larm_menu()
+        menu_choice = input("Välj ett alternativ (1-2): ")
+
+        if menu_choice == "1":
+            alarm_id = get_alarm_id()
+            if alarm_id is None:
+                return "Inga larm att ta bort."
+            
+            result = alarm_manager.remove_alarm(alarm_id)
+            if result:
+                return f"Larm med id {alarm_id} har tagits bort."
+            else:
+                return f"Kunde inte ta bort larm med id {alarm_id}. Kontrollera att id:t finns."
+
+        elif menu_choice == "2":
+            return None  # För att gå tillbaka
+
+        else:
+            print("Ogiltigt val. Välj 1-2.")
