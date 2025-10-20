@@ -37,7 +37,7 @@ def handle_menu_choice(choice):
         alarms = alarm_manager.get_alarms()
         if not alarms:
             return "Inga larm är konfigurerade."
-        return alarms
+        return "\n".join(alarms)
     elif choice == 5:
         result = edit_alarm()
         if result:

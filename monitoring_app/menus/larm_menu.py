@@ -75,8 +75,8 @@ def get_alarm_id():
             print("Fel: Ange en giltig siffra.")
 
 
+# Funktion för att editera larm
 def edit_alarm():
-    # Funktion för att editera larm
     while True:
         edit_larm_menu()
         menu_choice = input("Välj ett alternativ (1-2): ")
@@ -88,7 +88,7 @@ def edit_alarm():
             
             result = alarm_manager.remove_alarm(alarm_id)
             if result:
-                return f"Larm med id {alarm_id} har tagits bort."
+                return f"\nLarm med id {alarm_id} har tagits bort.\n"
             else:
                 return f"Kunde inte ta bort larm med id {alarm_id}. Kontrollera att id:t finns."
 

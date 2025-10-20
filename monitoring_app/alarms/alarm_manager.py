@@ -89,15 +89,8 @@ class AlarmManager:
     # Hämta alla alarm
     def get_alarms(self):
         alarms_data = self._load_alarms()
-        return [
-            {
-                "id": alarm["id"],
-                "type": alarm["type"],
-                "threshold": alarm["threshold"],
-                "str": f"{alarm['type']} larm {alarm['threshold']}%"
-            }
-            for alarm in alarms_data
-        ]
+        return [f'{alarm["id"] + 1}. {alarm["type"]} larm {alarm["threshold"]}%'
+                for alarm in alarms_data]
     
     # Ta bort ett alarm
     def remove_alarm(self, alarm_id):
