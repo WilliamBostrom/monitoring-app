@@ -6,8 +6,8 @@ from alarms.alarm_manager import alarm_manager
 
 def print_main_menu():
     print("\n--- HUVUDMENY ---")
-    print("1. Starta övervakning")
-    print("2. Lista aktiv övervakning")
+    print("1. Starta systemövervakning")
+    print("2. Lista systemövervakning")
     print("3. Skapa larm")
     print("4. Visa larm")
     print("5. Editera larm")
@@ -26,12 +26,12 @@ def handle_menu_choice(choice):
                 system_info['memory_percent'],
                 system_info['disk_percent']
             )
-        return system_info
+        return "Aktuell status visad."
     elif choice == 3:
         new_alarm = create_alarm()
         if new_alarm:
-            result = alarm_manager.add_alarm(new_alarm)
-            return f"Larm '{new_alarm}' skapat."
+            alarm_manager.add_alarm(new_alarm)
+            return None
         return "Inget larm skapat."
     elif choice == 4:
         alarms = alarm_manager.get_alarms()
@@ -47,8 +47,8 @@ def handle_menu_choice(choice):
         alarms = alarm_manager.get_alarms()
         if not alarms:
             return "Inga larm är konfigurerade. Skapa larm först."
-        alarm_monitor([alarm for alarm in alarm_manager.alarms])
-        return "Övervakningsläge startat."
+        alarm_monitor()
+        return None
     elif choice == 7:
         return "Avslutar programmet.."
     
@@ -60,12 +60,13 @@ def menu():
     while True:
         print_main_menu()
         try:
-            choice = int(input("Välj ett alternativ (1-7): "))
+            choice = int(input("\nVälj ett alternativ (1-7): "))
         except ValueError:
-            print("Ogiltigt val, ange en siffra 1–7.")
+            print("\nOgiltigt val, ange en siffra 1–7.")
             continue
         result = handle_menu_choice(choice)
-        print(result)
+        if result:
+            print(result)
         if choice == 7:
             break
 

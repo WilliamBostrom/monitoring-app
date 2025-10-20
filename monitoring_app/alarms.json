@@ -1,19 +1,29 @@
 {
   "alarms": [
     {
-      "type": "Minnesanv\u00e4ndning",
+      "type": "CPU larm",
       "threshold": 20,
       "id": 0
     },
     {
-      "type": "Minnesanv\u00e4ndning",
-      "threshold": 2,
+      "type": "Minneslarm",
+      "threshold": 13,
       "id": 1
     },
     {
-      "type": "CPU anv\u00e4ndning",
-      "threshold": 33,
+      "type": "Disklarm",
+      "threshold": 13,
       "id": 2
+    },
+    {
+      "type": "CPU larm",
+      "threshold": 33,
+      "id": 3
+    },
+    {
+      "type": "Disklarm",
+      "threshold": 13,
+      "id": 4
     }
   ]
 }
