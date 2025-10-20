@@ -85,11 +85,11 @@ Projektet visar hur man kan använda Python för att skapa en enkel men effektiv
 
 ## 12. Docker, Nginx och Frontend-implementation
 
-Projektet inkluderar en komplett webbapplikation med Docker-containerisering och Nginx-proxy. Frontend-implementationen finns i `frontend`-branchen och är byggd med SvelteKit + TypeScript.
+Projektet inkluderar en komplett webbapplikation med Docker-containerisering och Nginx-proxy. Frontend-implementationen finns i `frontend`-branchen och är byggd med Svelte + TypeScript.
 
 **Teknisk stack:**
 
-- **Frontend:** SvelteKit + Vite + TypeScript
+- **Frontend:** Svelte + Vite + TypeScript
 - **Backend:** Python med FastAPI + Uvicorn ASGI-server
 - **Proxy:** Nginx för API-routing
 - **Containerisering:** Docker Compose för hela stacken
