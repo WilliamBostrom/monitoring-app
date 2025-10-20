@@ -79,9 +79,9 @@ def get_alarm_id():
 def edit_alarm():
     while True:
         edit_larm_menu()
-        menu_choice = input("Välj ett alternativ (1-2): ")
+        menu_choice = int(input("Välj ett alternativ (1-2): "))
 
-        if menu_choice == "1":
+        if menu_choice == 1:
             alarm_id = get_alarm_id()
             if alarm_id is None:
                 return "Inga larm att ta bort."
@@ -92,7 +92,7 @@ def edit_alarm():
             else:
                 return f"Kunde inte ta bort larm med id {alarm_id}. Kontrollera att id:t finns."
 
-        elif menu_choice == "2":
+        elif menu_choice == 2:
             return None  # För att gå tillbaka
 
         else:
