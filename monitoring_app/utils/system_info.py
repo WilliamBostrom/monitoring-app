@@ -1,9 +1,10 @@
 import psutil
-import platform
+import os
 
 #Hämtar aktuell systeminformation och returnerar som dictionary
 def get_system_info():
-    disk_path = 'C:' if platform.system() == "Windows" else '/'
+    # I WSL: använd Windows C: istället för Linux root-filsystemet
+    disk_path = '/mnt/c' if os.path.exists('/mnt/c') else '/'
     
     return {
         'cpu_percent': psutil.cpu_percent(),
