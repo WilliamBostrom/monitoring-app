@@ -18,7 +18,6 @@ def get_alarm_threshold():
             print("Fel: Ange en giltig siffra mellan 1-100.")
 
 
-from alarms.alarm import Alarm
 from alarms.alarm_manager import alarm_manager
 
  # funktion för att skapa larm
@@ -30,17 +29,17 @@ def create_alarm():
         if menu_choice == "1":
             threshold = get_alarm_threshold()
             print(f"Larm för CPU användning satt till {threshold}%.")
-            return Alarm("CPU larm", threshold)
+            return {"type": "CPU larm", "threshold": threshold}
 
         elif menu_choice == "2":
             threshold = get_alarm_threshold()
             print(f"Larm för Minnesanvändning satt till {threshold}%.")
-            return Alarm("Minneslarm", threshold)
+            return {"type": "Minneslarm", "threshold": threshold}
 
         elif menu_choice == "3":
             threshold = get_alarm_threshold()
             print(f"Larm för Diskanvändning satt till {threshold}%.")
-            return Alarm("Disklarm", threshold)
+            return {"type": "Disklarm", "threshold": threshold}
 
         elif menu_choice == "4":
             return None  

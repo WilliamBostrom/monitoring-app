@@ -3,22 +3,6 @@ from utils.system_info import get_system_info
 from utils.utils import wait_for_enter
 from .alarm_manager import alarm_manager
 
-
-
-
-class Alarm:
-    def __init__(self, alarm_type, threshold):
-        self.type = alarm_type
-        self.threshold = threshold
-
-    def is_triggered(self, current_value):
-        return current_value >= self.threshold
-
-    def __str__(self):
-        return f"{self.type} larm {self.threshold}%"
-
-
-
 def alarm_monitor():
   try:
     while True:

@@ -9,8 +9,8 @@ class AlarmManager:
     def add_alarm(self, alarm):
         alarms_data = self._load_alarms()
         alarm_data = {
-            "type": alarm.type,
-            "threshold": alarm.threshold,
+            "type": alarm["type"],
+            "threshold": alarm["threshold"],
             "id": len(alarms_data)
         }
         alarms_data.append(alarm_data)
