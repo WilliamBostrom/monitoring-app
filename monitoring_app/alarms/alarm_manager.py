@@ -4,22 +4,21 @@ from utils.system_info import get_system_info
 class AlarmManager:
     def __init__(self, storage_file="alarms.json"):
         self.storage_file = storage_file
+        self.alarms = self._load_alarms()
 
     # Publika metoder
     def add_alarm(self, alarm):
-        alarms_data = self._load_alarms()
         alarm_data = {
             "type": alarm["type"],
             "threshold": alarm["threshold"],
-            "id": len(alarms_data)
+            "id": len(self.alarms)
         }
-        alarms_data.append(alarm_data)
-        self._save_alarms(alarms_data)
+        self.alarms.append(alarm_data)
+        self._save_alarms(self.alarms)
         
         return None
     
     def get_alarms(self):
-        alarms_data = self._load_alarms()
         return [
             {
                 "id": alarm["id"],
@@ -27,28 +26,26 @@ class AlarmManager:
                 "threshold": alarm["threshold"],
                 "str": f"{alarm['id']}. {alarm['type']} {alarm['threshold']}%"
             }
-            for alarm in alarms_data
+            for alarm in self.alarms
         ]
     
     def remove_alarm(self, alarm_id):
-        alarms_data = self._load_alarms()
-        if 0 <= alarm_id < len(alarms_data):
-            alarms_data.pop(alarm_id)
-            for i, alarm in enumerate(alarms_data):
+        if 0 <= alarm_id < len(self.alarms):
+            self.alarms.pop(alarm_id)
+            for i, alarm in enumerate(self.alarms):
                 alarm["id"] = i
-            self._save_alarms(alarms_data)
+            self._save_alarms(self.alarms)
             return True
         return False
     
     def check_alarms(self):
-        alarms_data = self._load_alarms()
-        if not alarms_data:
+        if not self.alarms:
             return []
 
         system_info = get_system_info()
         triggered_alarms = []
 
-        for alarm in alarms_data:
+        for alarm in self.alarms:
             current_value = None
 
             if alarm["type"] == "CPU larm":
