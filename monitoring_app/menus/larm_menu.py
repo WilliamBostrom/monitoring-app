@@ -52,29 +52,8 @@ def edit_larm_menu():
     print("1. Ta bort larm")
     print("2. Tillbaka till huvudmeny")
 
-# Hämtar alarm och tar mot id för eventullt ta bort
-def get_alarm_id():
-    while True:
-        try:
-            alarms = alarm_manager.get_alarms()
-            if not alarms:
-                print("Inga larm finns att ta bort.")
-                return None
-            
-            print("\n--- Tillgängliga larm ---")
-            for alarm in alarms:
-                print(f"ID {alarm['id']}: {alarm['str']}")
-            
-            alarm_id = int(input("\nVälj id på larmet du vill ta bort: "))
-            if alarm_id >= 0:
-                return alarm_id
-            else:
-                print("Fel: Välj ett giltigt id.")
-        except ValueError:
-            print("Fel: Ange en giltig siffra.")
 
-
-# Funktion för att editera larm
+# Funktion för att editera/ta bort larm
 def edit_alarm():
     while True:
         edit_larm_menu()
@@ -96,3 +75,24 @@ def edit_alarm():
 
         else:
             print("Ogiltigt val. Välj 1-2.")
+
+# Hämtar alarm och tar mot id för eventullt ta bort
+def get_alarm_id():
+    while True:
+        try:
+            alarms = alarm_manager.get_alarms()
+            if not alarms:
+                print("Inga larm finns att ta bort.")
+                return None
+            
+            print("\n--- Tillgängliga larm ---")
+            for alarm in alarms:
+                print(f"ID {alarm['id']}: {alarm['str']}")
+            
+            alarm_id = int(input("\nVälj id på larmet du vill ta bort: "))
+            if alarm_id >= 0:
+                return alarm_id
+            else:
+                print("Fel: Välj ett giltigt id.")
+        except ValueError:
+            print("Fel: Ange en giltig siffra.")

@@ -3,8 +3,8 @@ from utils.monitoring_display import display_system_status
 from utils.system_info import get_system_info
 
 # Visar live systemövervakning med live uppdatering (1 sek mellanrum)
-def show_usage(cpu_usage, memory_usage, disk_usage, bars=50, msg="Live-övervakning"):
-  display_system_status(cpu_usage, memory_usage, disk_usage, bars, msg)
+def show_usage(cpu_usage, memory_usage, disk_usage, msg="Live-övervakning"):
+  display_system_status(cpu_usage, memory_usage, disk_usage, msg=msg)
   print("\nTryck Ctrl+C för att gå tillbaka till menyn")
 
 # Visar snapshot av aktuell systemstatus

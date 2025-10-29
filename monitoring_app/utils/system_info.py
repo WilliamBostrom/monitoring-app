@@ -2,8 +2,8 @@ import psutil
 import os
 
 #Hämtar aktuell systeminformation och returnerar som dictionary
+# I WSL: använd Windows C: istället för Linux root-filsystemet
 def get_system_info():
-    # I WSL: använd Windows C: istället för Linux root-filsystemet
     disk_path = '/mnt/c' if os.path.exists('/mnt/c') else '/'
     
     return {
